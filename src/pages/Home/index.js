@@ -8,15 +8,21 @@ import { getFavorite,setFavorite } from '../../services/favorite';
 
 import CategoryItem from '../../components/CategoryItem';
 import { FavoritePost } from '../../components/FavoritePost';
+import PostItem from '../../components/PostItem';
 
 export default function Home(){
    const navigation = useNavigation();
    const [categories, setCategories] = useState([]);
    const [favCategory, setFavCategory] = useState([]);   
 
+   const [posts,setPosts] = useState([]);
+
    useEffect(() => {
       
       async function loadData() {
+
+         await getListPosts();
+
          const category = await api.get("/api/categories?populate=icon")
          setCategories(category.data.data)
       }
@@ -33,6 +39,11 @@ export default function Home(){
 
       favorite();
    }, [])
+
+   async function getListPosts(){
+      const response = await api.get("/api/posts?populate=cover&sort=createdAt:desc")
+      setPosts(response.data.data)
+   }
 
    //Favoritando uma categoria
 
@@ -86,9 +97,16 @@ export default function Home(){
             style={[
                styles.title,
                { marginTop: favCategory.length > 0 ? 14 : 46 }
-            ]}>
-               Conteúdo em alta
+            ]}> Conteúdo em alta
             </Text>
+
+            <FlatList 
+               style={{ flex: 1, paddingHorizontal: 18, }}
+               showsHorizontalScrollIndicator={false}
+               data={posts}
+               keyExtractor={ (item) => String(item.id) }
+               renderItem={ ({ item }) => <PostItem data={item} />}
+            />
 
          </View>
       </SafeAreaView>
